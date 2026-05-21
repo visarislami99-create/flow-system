@@ -15,11 +15,6 @@ interface Props {
   reducedMotion: boolean;
 }
 
-// Returns reveal state for a block given its scroll range.
-// Reveal ramps in BEFORE `start` so the block is fully visible by `start`,
-// holds through `end`, then fades out over `outDuration`.
-//   reveal: 0 -> 1 during ramp-in
-//   out:    0 -> 1 during ramp-out (after end)
 function rangeState(
   progress: number,
   start: number,
@@ -28,7 +23,6 @@ function rangeState(
   outDuration = 0.04,
 ) {
   const inStart = Math.max(0, start - rampIn);
-  // Special-case ranges that begin at scroll 0 — show immediately.
   if (start <= 0) {
     if (progress < end) return { reveal: 1, out: 0 };
     if (progress < end + outDuration) {
@@ -53,9 +47,8 @@ function lineStyle(
   staggerIndex: number,
   reducedMotion: boolean,
 ): React.CSSProperties {
-  // Stagger 80ms per line — approximate with reveal lag of 0.04 progress units
   const r = Math.max(0, reveal - staggerIndex * 0.06);
-  const rClamped = Math.min(1, r * 2.2); // ramp faster once started
+  const rClamped = Math.min(1, r * 2.2);
   const visibility = 1 - out;
   if (reducedMotion) {
     return {
@@ -86,7 +79,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
       className="pointer-events-none fixed inset-0 z-10"
       aria-hidden={false}
     >
-      {/* HERO 0.00 - 0.05 (centered, near top) */}
       <Block position="hero">
         <h1
           className="font-serif text-balance text-center"
@@ -99,7 +91,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
         </h1>
       </Block>
 
-      {/* SECTION 2 0.10 - 0.20 (right of falling coin) */}
       <Block position="right-mid">
         {SECTION_2_LINES.map((line, i) => (
           <p
@@ -112,7 +103,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
         ))}
       </Block>
 
-      {/* SECTION 3 0.25 - 0.35 (left of falling coin) */}
       <Block position="left-mid">
         <h2
           className="font-serif text-h2 mb-10 text-balance"
@@ -131,7 +121,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
         ))}
       </Block>
 
-      {/* SECTION 4 0.40 - 0.55 (right of falling coin) */}
       <Block position="right-mid">
         <h2
           className="font-serif text-h2 mb-12 text-balance"
@@ -152,7 +141,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
         </div>
       </Block>
 
-      {/* SECTION 5 0.60 - 0.75 (left of falling coin) */}
       <Block position="left-mid">
         <h2
           className="font-serif text-h2 mb-10 text-balance"
@@ -186,7 +174,6 @@ export default function Copy({ progress, reducedMotion }: Props) {
         </div>
       </Block>
 
-      {/* SECTION 6 0.78 - 0.83 (centered) */}
       <Block position="center">
         <h2
           className="font-serif text-h2 text-balance text-center"
@@ -212,18 +199,17 @@ function Block({
   position: "hero" | "right-mid" | "left-mid" | "center";
   children: React.ReactNode;
 }) {
-  // Each block is fixed-positioned on screen. The Canvas underneath fills the
-  // viewport; copy is in negative space around the falling coin.
-  const base =
-    "absolute max-w-[460px] text-ink";
+  const base = "absolute text-ink";
   const map: Record<typeof position, string> = {
-    hero: "left-1/2 top-[10vh] -translate-x-1/2 w-[min(88vw,960px)] max-w-none text-center",
+    hero: "left-1/2 -translate-x-1/2 top-[10vh] w-[min(88vw,960px)] max-w-none text-center",
     "right-mid":
-      "right-[8vw] top-1/2 -translate-y-1/2 w-[min(38vw,480px)]",
+      "left-1/2 -translate-x-1/2 top-[56vh] w-[90vw] max-w-none " +
+      "md:left-auto md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:right-[8vw] md:w-[min(38vw,480px)] md:max-w-[460px]",
     "left-mid":
-      "left-[8vw] top-1/2 -translate-y-1/2 w-[min(38vw,480px)]",
+      "left-1/2 -translate-x-1/2 top-[56vh] w-[90vw] max-w-none " +
+      "md:left-[8vw] md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:w-[min(38vw,480px)] md:max-w-[460px]",
     center:
-      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(78vw,720px)] text-center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,720px)] max-w-none text-center",
   };
   return <div className={`${base} ${map[position]}`}>{children}</div>;
 }
