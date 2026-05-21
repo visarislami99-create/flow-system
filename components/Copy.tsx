@@ -203,11 +203,11 @@ function Block({
   const map: Record<typeof position, string> = {
     hero: "left-1/2 -translate-x-1/2 top-[10vh] w-[min(88vw,960px)] max-w-none text-center",
     "right-mid":
-      "left-1/2 -translate-x-1/2 top-[56vh] w-[90vw] max-w-none " +
-      "md:left-auto md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:right-[8vw] md:w-[min(38vw,480px)] md:max-w-[460px]",
+      "left-1/2 -translate-x-1/2 bottom-[10vh] w-[90vw] max-w-none " +
+      "md:bottom-auto md:left-auto md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:right-[8vw] md:w-[min(38vw,480px)] md:max-w-[460px]",
     "left-mid":
-      "left-1/2 -translate-x-1/2 top-[56vh] w-[90vw] max-w-none " +
-      "md:left-[8vw] md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:w-[min(38vw,480px)] md:max-w-[460px]",
+      "left-1/2 -translate-x-1/2 bottom-[10vh] w-[90vw] max-w-none " +
+      "md:bottom-auto md:left-[8vw] md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:w-[min(38vw,480px)] md:max-w-[460px]",
     center:
       "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,720px)] max-w-none text-center",
   };
