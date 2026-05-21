@@ -28,8 +28,8 @@ const config: Config = {
       fontSize: {
         display: ["clamp(48px, 8vw, 144px)", { lineHeight: "0.95", letterSpacing: "-0.02em" }],
         h2: ["clamp(28px, 3.6vw, 56px)", { lineHeight: "1.12", letterSpacing: "-0.015em" }],
-        body: ["18px", { lineHeight: "1.65" }],
-        "body-sm": ["16px", { lineHeight: "1.6" }],
+        body: ["clamp(15px, 1.8vw, 18px)", { lineHeight: "1.65" }],
+        "body-sm": ["clamp(13px, 1.5vw, 16px)", { lineHeight: "1.6" }],
       },
     },
   },
