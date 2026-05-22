@@ -148,9 +148,9 @@ export function coinRotation(scroll: number, out: CoinRotation): void {
     // Z: 6 full rotations, power2In so coin spins faster as it falls
     out.z = power2In(tFall) * Z_AT_LANDING;
 
-    // X: tilt arc — starts slight (0.1 rad), peaks at ~π/3 at mid-fall, returns near 0
-    // Formula: sin(t*π)*(π/3) creates the arc; + 0.1*(1-t) adds starting tilt
-    out.x = Math.sin(tFall * Math.PI) * (Math.PI / 3) + 0.1 * (1 - tFall);
+    // X: constant-rate tumble — 2 full flips (4π) over the fall.
+    // 4π mod 2π = 0 → coin arrives face-up at landing. Physically correct.
+    out.x = tFall * 4 * Math.PI;
     return;
   }
 
@@ -158,8 +158,8 @@ export function coinRotation(scroll: number, out: CoinRotation): void {
     // Bounce phase: z advances slowly, x damps to 0
     const tBounce = clamp01((scroll - FALL_END) / (BOUNCE_2_UP_END - FALL_END));
     out.z = Z_AT_LANDING + tBounce * Z_BOUNCE_RANGE;
-    // x is ~0 at landing already; use power3Out to smooth any residual
-    out.x = 0.1 * (1 - power3Out(tBounce)); // tiny residual damp
+    // x: decaying sine wobble simulates physical impact oscillation
+    out.x = 0.2 * Math.sin(tBounce * Math.PI * 1.5) * (1 - tBounce);
     return;
   }
 

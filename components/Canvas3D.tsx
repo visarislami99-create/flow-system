@@ -90,7 +90,7 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
       const stepY = progress < 0.33 ? 40 : progress < 0.66 ? 20 : 0;
       smoothedY.current = stepY;
     } else {
-      const alpha = 1 - Math.exp(-dt / 0.15);
+      const alpha = 1 - Math.exp(-dt / 0.05);
       smoothedY.current += (targetY - smoothedY.current) * alpha;
     }
     // X is always 0 — never drifts
