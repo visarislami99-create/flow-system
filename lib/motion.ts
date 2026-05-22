@@ -4,13 +4,13 @@ import * as THREE from "three";
 
 // Coin world-space bounds
 export const COIN_Y_START = 60;
-export const COIN_Y_REST = 0;
+export const COIN_Y_REST = 0.55;
 
 // Camera positions
 export const CAM_START_POS = new THREE.Vector3(0, 55, 25);
 export const CAM_START_LOOK = new THREE.Vector3(0, 60, 0);
-export const CAM_END_POS = new THREE.Vector3(0, 1, 6);
-export const CAM_END_LOOK = new THREE.Vector3(0, 0.5, 0);
+export const CAM_END_POS = new THREE.Vector3(0, 1.5, 6);
+export const CAM_END_LOOK = new THREE.Vector3(0, 0.8, 0);
 
 // Scroll milestones
 const FALL_END = 0.85;
@@ -35,27 +35,27 @@ export function coinY(scroll: number): number {
     return 60 - eased * 59; // 60 -> 1
   }
   if (scroll <= 0.88) {
-    // 0.85 -> 0.88: 1 -> 0 (contact approach)
+    // 0.85 -> 0.88: 1 -> REST (contact approach)
     const t = (scroll - FALL_END) / (0.88 - FALL_END);
-    return 1 - t;
+    return 1 - t * (1 - COIN_Y_REST);
   }
   if (scroll <= BOUNCE_1_UP_END) {
-    // 0.88 -> 0.92: 0 -> 2.5, power3.out (first big bounce)
+    // 0.88 -> 0.92: REST -> REST+2.5, power3.out (first big bounce)
     const t = (scroll - 0.88) / (BOUNCE_1_UP_END - 0.88);
-    return power3Out(t) * 2.5;
+    return COIN_Y_REST + power3Out(t) * 2.5;
   }
   if (scroll <= BOUNCE_1_DOWN_END) {
-    // 0.92 -> 0.95: 2.5 -> 0, power2.in
+    // 0.92 -> 0.95: REST+2.5 -> REST, power2.in
     const t = (scroll - BOUNCE_1_UP_END) / (BOUNCE_1_DOWN_END - BOUNCE_1_UP_END);
-    return 2.5 - power2In(t) * 2.5;
+    return COIN_Y_REST + 2.5 - power2In(t) * 2.5;
   }
   if (scroll <= BOUNCE_2_UP_END) {
-    // 0.95 -> 0.97: small arc (second bounce)
+    // 0.95 -> 0.97: small arc above REST (second bounce)
     const t = (scroll - BOUNCE_1_DOWN_END) / (BOUNCE_2_UP_END - BOUNCE_1_DOWN_END);
-    return Math.sin(t * Math.PI) * 0.6;
+    return COIN_Y_REST + Math.sin(t * Math.PI) * 0.6;
   }
-  // 0.97 -> 1.0: settled flat
-  return 0;
+  // 0.97 -> 1.0: settled at REST
+  return COIN_Y_REST;
 }
 
 // Bloom strength spikes on contact frames

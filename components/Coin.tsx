@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useMemo, Suspense } from "react";
+import { forwardRef, useEffect, useMemo, useState, Suspense } from "react";
 import { useGLTF, Text3D, Center } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -13,16 +13,12 @@ interface Props {
   visible: boolean;
 }
 
-// Dark gold engraved material — darker than the coin face so it reads as a recess
 const ENGRAVE_MAT_PROPS = {
-  color: "#5C3D11",
-  metalness: 0.4,
-  roughness: 0.8,
+  color: "#4A2E08",
+  metalness: 0.3,
+  roughness: 0.9,
 };
 
-// The coin group's position/rotation are mutated each frame by Canvas3D.
-// This component just provides the geometry + material. ref points to the
-// outer group so the parent can transform it.
 const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
   const gltf = useGLTF(COIN_URL);
 
@@ -38,12 +34,14 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     return mat;
   }, []);
 
-  // Clone the scene so multiple consumers don't share mutable state.
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
 
+  // faceZ: the Z coordinate of the coin's front face after normalisation.
+  // Computed from the bounding box so text always sits flush regardless of source mesh.
+  const [faceZ, setFaceZ] = useState(0.035);
+  const [textSize, setTextSize] = useState(0.09);
+
   useEffect(() => {
-    // Normalise the mesh: centre it on the origin, scale to ~1 unit diameter,
-    // then apply the override material.
     const box = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
     const center = new THREE.Vector3();
@@ -55,6 +53,15 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     scene.scale.setScalar(targetScale);
     scene.position.sub(center.multiplyScalar(targetScale));
 
+    // Coin face Z in outer-group space = half the normalised thickness
+    const normZ = (size.z * targetScale) / 2;
+    // Coin diameter in outer-group space (largest of X/Y after normalisation)
+    const normDiam = Math.max(size.x, size.y) * targetScale;
+
+    setFaceZ(normZ);
+    // Text fills ~55% of the coin diameter
+    setTextSize(normDiam * 0.14);
+
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh) {
@@ -65,16 +72,22 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     });
   }, [scene, material]);
 
+  // Engrave depth = 40% of coin thickness so text is clearly visible but stays inside
+  const engraveDepth = Math.max(0.004, faceZ * 0.4);
+  // Text sits with its front face AT the coin surface (flush or 1mm proud)
+  const frontZ = faceZ - engraveDepth + 0.001;
+  const backZ  = -(faceZ - engraveDepth + 0.001);
+
   return (
     <group ref={ref} visible={visible}>
       <primitive object={scene} />
       <Suspense fallback={null}>
-        {/* Front face engraving — z=0.46 sits just inside the coin surface */}
-        <Center position={[0, 0, 0.46]}>
+        {/* Front face — text extrudes inward (toward coin centre) */}
+        <Center position={[0, 0, frontZ]}>
           <Text3D
             font={FONT_URL}
-            size={0.13}
-            height={0.015}
+            size={textSize}
+            height={engraveDepth}
             curveSegments={12}
             bevelEnabled={false}
           >
@@ -82,12 +95,12 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
             <meshStandardMaterial {...ENGRAVE_MAT_PROPS} />
           </Text3D>
         </Center>
-        {/* Back face engraving — mirrored 180° so it reads correctly from behind */}
-        <Center position={[0, 0, -0.46]} rotation={[0, Math.PI, 0]}>
+        {/* Back face — flipped 180° on Y so lettering reads correctly */}
+        <Center position={[0, 0, backZ]} rotation={[0, Math.PI, 0]}>
           <Text3D
             font={FONT_URL}
-            size={0.13}
-            height={0.015}
+            size={textSize}
+            height={engraveDepth}
             curveSegments={12}
             bevelEnabled={false}
           >
