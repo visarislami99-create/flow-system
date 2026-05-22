@@ -7,7 +7,7 @@ export const COIN_Y_START = 60;
 export const COIN_Y_REST = 0.55;
 
 // Camera positions
-export const CAM_START_POS = new THREE.Vector3(0, 55, 25);
+export const CAM_START_POS = new THREE.Vector3(0, 55, 8);
 export const CAM_START_LOOK = new THREE.Vector3(0, 60, 0);
 export const CAM_END_POS = new THREE.Vector3(0, 1.5, 6);
 export const CAM_END_LOOK = new THREE.Vector3(0, 0.8, 0);
@@ -93,16 +93,15 @@ const tmpTrackLook = new THREE.Vector3();
 export function cameraState(scroll: number, out: CameraState): void {
   const cy = coinY(scroll);
   if (scroll < TRACK_END) {
-    // Z dollies from 25 → 7 as we approach transition
-    const t = scroll / TRACK_END;
-    out.pos.set(0, cy - 5, 25 - 18 * t); // 25 → 7
+    // Constant Z=8 so the coin keeps the same apparent size during the fall.
+    out.pos.set(0, cy - 5, 8);
     out.look.set(0, cy + 0.5, 0);
     return;
   }
   if (scroll < FALL_END) {
     const t = (scroll - TRACK_END) / (FALL_END - TRACK_END);
     const eased = power3Out(t);
-    tmpTrackPos.set(0, cy - 5, 7);
+    tmpTrackPos.set(0, cy - 5, 8);
     tmpTrackLook.set(0, cy + 0.5, 0);
     out.pos.lerpVectors(tmpTrackPos, CAM_END_POS, eased);
     out.look.lerpVectors(tmpTrackLook, CAM_END_LOOK, eased);

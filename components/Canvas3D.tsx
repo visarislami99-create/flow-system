@@ -230,7 +230,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         toneMappingExposure: 1.1,
         alpha: false,
       }}
-      camera={{ position: [0, 55, 25], fov: 35, near: 0.1, far: 200 }}
+      camera={{ position: [0, 55, 8], fov: 35, near: 0.1, far: 200 }}
       style={{
         position: "fixed",
         inset: 0,
