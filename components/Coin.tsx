@@ -36,9 +36,9 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
 
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
 
-  // faceZ: the Z coordinate of the coin's front face after normalisation.
-  // Computed from the bounding box so text always sits flush regardless of source mesh.
-  const [faceZ, setFaceZ] = useState(0.035);
+  // faceHalf: half the coin thickness in world space after normalisation.
+  // Always ends up on the Z axis after the re-orientation below.
+  const [faceHalf, setFaceHalf] = useState(0.035);
   const [textSize, setTextSize] = useState(0.09);
 
   useEffect(() => {
@@ -53,14 +53,32 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     scene.scale.setScalar(targetScale);
     scene.position.sub(center.multiplyScalar(targetScale));
 
-    // Coin face Z in outer-group space = half the normalised thickness
-    const normZ = (size.z * targetScale) / 2;
-    // Coin diameter in outer-group space (largest of X/Y after normalisation)
-    const normDiam = Math.max(size.x, size.y) * targetScale;
+    const nx = size.x * targetScale;
+    const ny = size.y * targetScale;
+    const nz = size.z * targetScale;
 
-    setFaceZ(normZ);
-    // Text fills ~55% of the coin diameter
-    setTextSize(normDiam * 0.14);
+    // The coin face normal is the axis with the smallest normalised extent (= coin thickness).
+    // We re-orient the scene so that axis always aligns with world Z, so Text3D
+    // positioning is always consistent regardless of how the GLB was authored.
+    const xThin = nx <= ny && nx <= nz;
+    const yThin = !xThin && ny <= nz;
+
+    if (xThin) {
+      // Coin faces along X → rotate so X→Z (rotate -90° around Y)
+      scene.rotation.set(0, -Math.PI / 2, 0);
+      setFaceHalf(nx / 2);
+      setTextSize(Math.max(ny, nz) * 0.14);
+    } else if (yThin) {
+      // Coin faces along Y (most common: coin lying flat) → rotate so Y→Z (rotate 90° around X)
+      scene.rotation.set(Math.PI / 2, 0, 0);
+      setFaceHalf(ny / 2);
+      setTextSize(Math.max(nx, nz) * 0.14);
+    } else {
+      // Coin faces already along Z — no rotation needed
+      scene.rotation.set(0, 0, 0);
+      setFaceHalf(nz / 2);
+      setTextSize(Math.max(nx, ny) * 0.14);
+    }
 
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
@@ -72,17 +90,17 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     });
   }, [scene, material]);
 
-  // Engrave depth = 40% of coin thickness so text is clearly visible but stays inside
-  const engraveDepth = Math.max(0.004, faceZ * 0.4);
-  // Text sits with its front face AT the coin surface (flush or 1mm proud)
-  const frontZ = faceZ - engraveDepth + 0.001;
-  const backZ  = -(faceZ - engraveDepth + 0.001);
+  // Engrave depth = 40% of half-thickness, minimum 4mm equivalent
+  const engraveDepth = Math.max(0.004, faceHalf * 0.4);
+  // Text front face sits flush with (or 1mm proud of) the coin surface
+  const frontZ = faceHalf - engraveDepth + 0.001;
+  const backZ  = -(faceHalf - engraveDepth + 0.001);
 
   return (
     <group ref={ref} visible={visible}>
       <primitive object={scene} />
       <Suspense fallback={null}>
-        {/* Front face — text extrudes inward (toward coin centre) */}
+        {/* Front face (heads) — text extrudes inward toward coin centre */}
         <Center position={[0, 0, frontZ]}>
           <Text3D
             font={FONT_URL}
@@ -95,7 +113,7 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
             <meshStandardMaterial {...ENGRAVE_MAT_PROPS} />
           </Text3D>
         </Center>
-        {/* Back face — flipped 180° on Y so lettering reads correctly */}
+        {/* Back face (tails) — flipped 180° on Y so lettering reads correctly */}
         <Center position={[0, 0, backZ]} rotation={[0, Math.PI, 0]}>
           <Text3D
             font={FONT_URL}
