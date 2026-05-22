@@ -4,13 +4,14 @@ import * as THREE from "three";
 
 // Coin world-space bounds
 export const COIN_Y_START = 60;
-export const COIN_Y_REST = 0.55;
+export const COIN_Y_REST = 0.1;
 
 // Camera positions
 export const CAM_START_POS = new THREE.Vector3(0, 55, 8);
 export const CAM_START_LOOK = new THREE.Vector3(0, 60, 0);
-export const CAM_END_POS = new THREE.Vector3(0, 1.5, 6);
-export const CAM_END_LOOK = new THREE.Vector3(0, 0.8, 0);
+// Elevated camera so the flat coin face (Y-up) is clearly visible at rest.
+export const CAM_END_POS = new THREE.Vector3(0, 4, 3);
+export const CAM_END_LOOK = new THREE.Vector3(0, 0.2, 0);
 
 // Scroll milestones
 const FALL_END = 0.85;
@@ -134,7 +135,11 @@ export interface CoinRotation {
 const Z_AT_LANDING = 6 * TWO_PI;              // z at scroll=0.85
 const Z_BOUNCE_RANGE = Math.PI * 0.3;         // extra z during bounce phase
 const Z_AT_SETTLE = Z_AT_LANDING + Z_BOUNCE_RANGE; // z at scroll=0.97
-const Z_SETTLE_RANGE = Math.PI * 0.15;        // extra z during settle
+// Settle target = 12π = exactly 6 full rotations → face normal returns to its
+// original orientation (face-up for a Y-thin coin).  Since Z_AT_SETTLE > 12π,
+// the coin gently unspins 0.94 rad as it comes to rest — looks like a natural
+// wobble-settle rather than a sharp stop.
+const Z_SETTLE_TARGET = 12 * Math.PI;
 
 export function coinRotation(scroll: number, out: CoinRotation): void {
   if (scroll <= FALL_END) {
@@ -158,8 +163,10 @@ export function coinRotation(scroll: number, out: CoinRotation): void {
     return;
   }
 
-  // Settled: coin lies flat, minimal scroll-driven idle spin
+  // Settle: coin eases back to Z_SETTLE_TARGET (face-up) with power3Out deceleration.
+  // The small backward spin (0.94 rad) looks like a natural wobble coming to rest.
   const tSettle = clamp01((scroll - BOUNCE_2_UP_END) / (1 - BOUNCE_2_UP_END));
-  out.z = Z_AT_SETTLE + tSettle * Z_SETTLE_RANGE;
+  const easeSettle = power3Out(tSettle);
+  out.z = Z_AT_SETTLE + easeSettle * (Z_SETTLE_TARGET - Z_AT_SETTLE);
   out.x = 0;
 }

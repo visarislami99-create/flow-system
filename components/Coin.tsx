@@ -11,7 +11,7 @@ useGLTF.preload(COIN_URL);
 
 // How many world-space units wide the coin should be.
 // Larger = coin appears bigger at the same camera distance.
-const WORLD_SCALE = 2;
+const WORLD_SCALE = 1.2;
 
 interface Props {
   visible: boolean;
