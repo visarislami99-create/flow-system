@@ -52,7 +52,6 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
   const smoothedY = useRef(60);
   const smoothedCamPos = useRef(new THREE.Vector3());
   const smoothedCamLook = useRef(new THREE.Vector3());
-  const elapsedRef = useRef(0);
 
   // Initial camera setup — read the scroll-0 tracking position so we don't
   // visibly lerp from default to tracking on first frame.
@@ -82,7 +81,6 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
   useFrame((_, delta) => {
     if (!coinRef.current) return;
     const dt = Math.min(delta, 0.1); // clamp dt to avoid huge jumps after tab switches
-    elapsedRef.current += dt;
     const progress = progressRef.current;
 
     // Position — smoothed
@@ -95,14 +93,16 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
       const alpha = 1 - Math.exp(-dt / 0.15);
       smoothedY.current += (targetY - smoothedY.current) * alpha;
     }
+    // X is always 0 — never drifts
+    coinRef.current.position.x = 0;
     coinRef.current.position.y = smoothedY.current;
 
-    // Rotation — driven by elapsed time + scroll phase
+    // Rotation — pure scroll-driven, fully reversible
     if (reducedMotion) {
       coinRef.current.rotation.x = 0;
       coinRef.current.rotation.z = 0;
     } else {
-      coinRotation(progress, elapsedRef.current, scratchRot);
+      coinRotation(progress, scratchRot);
       coinRef.current.rotation.x = scratchRot.x;
       coinRef.current.rotation.z = scratchRot.z;
     }
@@ -230,7 +230,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         toneMappingExposure: 1.1,
         alpha: false,
       }}
-      camera={{ position: [0, 4, 12], fov: 35, near: 0.1, far: 200 }}
+      camera={{ position: [0, 55, 25], fov: 35, near: 0.1, far: 200 }}
       style={{
         position: "fixed",
         inset: 0,

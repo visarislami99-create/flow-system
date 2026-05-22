@@ -212,18 +212,28 @@ function Block({
   position: "hero" | "right-mid" | "left-mid" | "center";
   children: React.ReactNode;
 }) {
-  // Each block is fixed-positioned on screen. The Canvas underneath fills the
-  // viewport; copy is in negative space around the falling coin.
-  const base =
-    "absolute max-w-[460px] text-ink";
+  // Mobile: all blocks are centered full-width.
+  // md+: original left/right split around the coin.
+  const base = "absolute text-ink";
   const map: Record<typeof position, string> = {
-    hero: "left-1/2 top-[10vh] -translate-x-1/2 w-[min(88vw,960px)] max-w-none text-center",
+    // Hero: full-width centered near top — same on all viewports
+    hero: "left-1/2 -translate-x-1/2 top-[10vh] w-[min(88vw,960px)] max-w-none text-center",
+
+    // Mobile: centered, lower half of screen so the coin is visible above.
+    // md+: right edge, vertically centered — original desktop layout.
     "right-mid":
-      "right-[8vw] top-1/2 -translate-y-1/2 w-[min(38vw,480px)]",
+      "left-1/2 -translate-x-1/2 bottom-[10vh] w-[90vw] max-w-none " +
+      "md:bottom-auto md:left-auto md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:right-[8vw] md:w-[min(38vw,480px)] md:max-w-[460px]",
+
+    // Mobile: anchored to bottom so content grows upward — never overflows.
+    // md+: left edge, vertically centered — original desktop layout.
     "left-mid":
-      "left-[8vw] top-1/2 -translate-y-1/2 w-[min(38vw,480px)]",
+      "left-1/2 -translate-x-1/2 bottom-[10vh] w-[90vw] max-w-none " +
+      "md:bottom-auto md:left-[8vw] md:translate-x-0 md:top-1/2 md:-translate-y-1/2 md:w-[min(38vw,480px)] md:max-w-[460px]",
+
+    // Center: 90vw on mobile, capped at 720px on large screens
     center:
-      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(78vw,720px)] text-center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(90vw,720px)] max-w-none text-center",
   };
   return <div className={`${base} ${map[position]}`}>{children}</div>;
 }
