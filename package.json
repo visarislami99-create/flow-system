@@ -18,7 +18,8 @@
     "postprocessing": "^6.35.3",
     "react": "^18",
     "react-dom": "^18",
-    "three": "^0.163.0"
+    "three": "^0.163.0",
+    "@react-three/rapier": "^0.14.0"
   },
   "devDependencies": {
     "@types/node": "^20",

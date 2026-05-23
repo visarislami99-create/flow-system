@@ -1,39 +1,29 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Physics, RigidBody, CylinderCollider, CuboidCollider } from "@react-three/rapier";
 import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import Coin from "./Coin";
-import {
-  cameraState,
-  coinY,
-  coinRotation,
-  bloomStrength,
-  type CameraState,
-  type CoinRotation,
-} from "@/lib/motion";
+import { cameraState, type CameraState } from "@/lib/motion";
 
 interface Props {
   progressRef: { current: number };
   reducedMotion: boolean;
 }
 
-// Reusable scratch objects to avoid per-frame allocations.
 const scratchCam: CameraState = {
   pos: new THREE.Vector3(),
   look: new THREE.Vector3(),
 };
-const scratchRot: CoinRotation = { x: 0, z: 0 };
 
 function SceneContents({ progressRef, reducedMotion }: Props) {
-  const coinRef = useRef<THREE.Group>(null);
   const { camera, scene, gl } = useThree();
 
   // Procedural environment map — gives the gold coin something to reflect.
-  // Without this, a high-metalness PBR material renders as a dark blob.
   useEffect(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
     const envScene = new RoomEnvironment();
@@ -45,16 +35,10 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
     };
   }, [gl, scene]);
 
-  // Internal smoothed state — exponential smoothing with 0.15s window.
-  // This is the "gsap.quickTo with 0.15s smoothing" from the brief: even
-  // when scroll jumps, coin Y catches up over ~150ms. The motion stays
-  // human-paced no matter how fast the user scrolls.
-  const smoothedY = useRef(60);
   const smoothedCamPos = useRef(new THREE.Vector3());
   const smoothedCamLook = useRef(new THREE.Vector3());
 
-  // Initial camera setup — read the scroll-0 tracking position so we don't
-  // visibly lerp from default to tracking on first frame.
+  // Initialise camera at scroll=0 position so first frame has no jump.
   useEffect(() => {
     cameraState(0, scratchCam);
     smoothedCamPos.current.copy(scratchCam.pos);
@@ -67,58 +51,19 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
     (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
   }, [camera]);
 
-  // Flash state for form-submit bloom
-  const flashRef = useRef({ active: false, until: 0 });
-  useEffect(() => {
-    const handler = () => {
-      flashRef.current.active = true;
-      flashRef.current.until = performance.now() + 200;
-    };
-    window.addEventListener("coin-flash", handler);
-    return () => window.removeEventListener("coin-flash", handler);
-  }, []);
-
+  // Camera dolly — scroll-driven, independent of coin physics.
   useFrame((_, delta) => {
-    if (!coinRef.current) return;
-    const dt = Math.min(delta, 0.1); // clamp dt to avoid huge jumps after tab switches
+    if (reducedMotion) return;
+    const dt = Math.min(delta, 0.1);
     const progress = progressRef.current;
-
-    // Position — smoothed
-    const targetY = coinY(progress);
-    if (reducedMotion) {
-      // Three discrete positions: top, middle, bottom
-      const stepY = progress < 0.33 ? 40 : progress < 0.66 ? 20 : 0;
-      smoothedY.current = stepY;
-    } else {
-      const alpha = 1 - Math.exp(-dt / 0.05);
-      smoothedY.current += (targetY - smoothedY.current) * alpha;
-    }
-    // X is always 0 — never drifts
-    coinRef.current.position.x = 0;
-    coinRef.current.position.y = smoothedY.current;
-
-    // Rotation — pure scroll-driven, fully reversible
-    if (reducedMotion) {
-      coinRef.current.rotation.x = 0;
-      coinRef.current.rotation.z = 0;
-    } else {
-      coinRotation(progress, scratchRot);
-      coinRef.current.rotation.x = scratchRot.x;
-      coinRef.current.rotation.z = scratchRot.z;
-    }
-
-    // Camera — smooth dolly. Locked from 0.85 onward (cameraState clamps t to 1).
-    if (!reducedMotion) {
-      cameraState(progress, scratchCam);
-      const camAlpha = 1 - Math.exp(-dt / 0.25);
-      smoothedCamPos.current.lerp(scratchCam.pos, camAlpha);
-      smoothedCamLook.current.lerp(scratchCam.look, camAlpha);
-      camera.position.copy(smoothedCamPos.current);
-      camera.lookAt(smoothedCamLook.current);
-    }
+    cameraState(progress, scratchCam);
+    const camAlpha = 1 - Math.exp(-dt / 0.25);
+    smoothedCamPos.current.lerp(scratchCam.pos, camAlpha);
+    smoothedCamLook.current.lerp(scratchCam.look, camAlpha);
+    camera.position.copy(smoothedCamPos.current);
+    camera.lookAt(smoothedCamLook.current);
   });
 
-  // Build the floor — a thin disc with a radial-gradient texture
   const floorTexture = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 512;
@@ -137,78 +82,64 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
 
   return (
     <>
-      {/* Lighting — key champagne, cool fill, white rim. The coin is in
-          freefall through world space, but directional lights have constant
-          direction so they hit consistently regardless of coin Y. */}
-      <directionalLight
-        position={[5, 10, 5]}
-        color={"#FFE6BD"}
-        intensity={3.2}
-      />
-      <directionalLight
-        position={[-3, 4, 3]}
-        color={"#FFFFFF"}
-        intensity={1.0}
-      />
-      <directionalLight
-        position={[0, 2, -5]}
-        color={"#FFFFFF"}
-        intensity={1.6}
-      />
+      {/* Lighting */}
+      <directionalLight position={[5, 10, 5]} color={"#FFE6BD"} intensity={3.2} />
+      <directionalLight position={[-3, 4, 3]} color={"#FFFFFF"} intensity={1.0} />
+      <directionalLight position={[0, 2, -5]} color={"#FFFFFF"} intensity={1.6} />
       <ambientLight intensity={0.55} color={"#FFFFFF"} />
-      <hemisphereLight
-        color={"#FFFFFF"}
-        groundColor={"#F5F3EE"}
-        intensity={0.5}
-      />
+      <hemisphereLight color={"#FFFFFF"} groundColor={"#F5F3EE"} intensity={0.5} />
 
-      {/* Floor */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, -0.05, 0]} receiveShadow={false}>
+      {/* Visual floor */}
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} receiveShadow={false}>
         <circleGeometry args={[20, 64]} />
         <meshBasicMaterial map={floorTexture} toneMapped={false} />
       </mesh>
 
-      {/* Coin */}
-      <Suspense fallback={null}>
-        <Coin ref={coinRef} visible={true} />
-      </Suspense>
+      {reducedMotion ? (
+        // Reduced motion: coin sits at rest, no physics.
+        <group position={[0, 0.09, 0]}>
+          <Suspense fallback={null}>
+            <Coin visible={true} />
+          </Suspense>
+        </group>
+      ) : (
+        // Full physics: coin spawns at Y=15, Rapier handles gravity + tumble + bounce.
+        <Physics gravity={[0, -9.81, 0]}>
+          {/* Static floor — coin collides here */}
+          <RigidBody type="fixed" restitution={0.25} friction={0.8}>
+            <CuboidCollider args={[20, 0.05, 20]} position={[0, -0.05, 0]} />
+          </RigidBody>
 
+          {/* Coin — real physics from spawn */}
+          <RigidBody
+            position={[0, 15, 0]}
+            angularVelocity={[4, 0.3, 10]}
+            restitution={0.25}
+            friction={0.7}
+            linearDamping={0.05}
+            angularDamping={0.5}
+            colliders={false}
+          >
+            {/*
+              CylinderCollider args: [halfHeight, radius]
+              Coin WORLD_SCALE=1.2 → radius≈0.6, thickness≈0.18 → halfHeight≈0.09
+            */}
+            <CylinderCollider args={[0.09, 0.6]} />
+            <Suspense fallback={null}>
+              <Coin visible={true} />
+            </Suspense>
+          </RigidBody>
+        </Physics>
+      )}
     </>
   );
 }
 
-// Typed loosely — @react-three/postprocessing's Bloom ref types are broken
-// (declare LegacyRef<typeof BloomEffect> instead of the instance type).
-// The actual ref.current at runtime is the BloomEffect instance, which has
-// a writable `intensity` property.
-type BloomLike = { intensity: number } | null;
-
-function PostFX({
-  progressRef,
-  reducedMotion,
-}: {
-  progressRef: { current: number };
-  reducedMotion: boolean;
-}) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const bloomRef = useRef<any>(null);
-
-  useFrame(() => {
-    const b = bloomRef.current as BloomLike;
-    if (!b) return;
-    if (reducedMotion) {
-      b.intensity = 0;
-      return;
-    }
-    b.intensity = bloomStrength(progressRef.current);
-  });
-
+function PostFX({ reducedMotion }: { reducedMotion: boolean }) {
   if (reducedMotion) return null;
-
   return (
     <EffectComposer multisampling={0} enableNormalPass={false}>
       <Bloom
-        ref={bloomRef}
         intensity={0.5}
         luminanceThreshold={0.85}
         luminanceSmoothing={0.05}
@@ -230,7 +161,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         toneMappingExposure: 1.1,
         alpha: false,
       }}
-      camera={{ position: [0, 55, 8], fov: 35, near: 0.1, far: 200 }}
+      camera={{ position: [0, 12, 10], fov: 35, near: 0.1, far: 200 }}
       style={{
         position: "fixed",
         inset: 0,
@@ -242,7 +173,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
     >
       <color attach="background" args={["#FFFFFF"]} />
       <SceneContents progressRef={progressRef} reducedMotion={reducedMotion} />
-      <PostFX progressRef={progressRef} reducedMotion={reducedMotion} />
+      <PostFX reducedMotion={reducedMotion} />
     </Canvas>
   );
 }
