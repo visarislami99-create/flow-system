@@ -13,6 +13,12 @@ const nextConfig = {
   },
   transpilePackages: ["three"],
   webpack: (config) => {
+    // Enable async WebAssembly — required for @react-three/rapier (Rapier physics is WASM).
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
     // Three.js examples sometimes ship as plain ESM; this keeps imports clean.
     config.module.rules.push({
       test: /\.(glb|gltf)$/,
