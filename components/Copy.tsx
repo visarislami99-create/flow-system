@@ -143,9 +143,9 @@ function Card({
   };
 
   if (position === "left") {
-    base.left = "6vw";
+    base.left = "16vw";
   } else {
-    base.right = "6vw";
+    base.right = "16vw";
   }
 
   // Mobile: stack centered at bottom
