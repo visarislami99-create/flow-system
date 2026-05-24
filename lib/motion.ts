@@ -124,15 +124,39 @@ export function coinRotation(scroll: number, out: CoinRotation): void {
   if (scroll <= FALL_END) {
     const tFall = clamp01(scroll / FALL_END);
     out.z = power2In(tFall) * Z_AT_LANDING;
+    // 2 full forward flips (4π) at constant rate → lands face-up (4π mod 2π = 0)
     out.x = tFall * 4 * Math.PI;
     return;
   }
-  if (scroll <= BOUNCE_2_UP_END) {
-    const tBounce = clamp01((scroll - FALL_END) / (BOUNCE_2_UP_END - FALL_END));
-    out.z = Z_AT_LANDING + tBounce * Z_BOUNCE_RANGE;
-    out.x = 0.2 * Math.sin(tBounce * Math.PI * 1.5) * (1 - tBounce);
+
+  // Z continues slowly throughout bounce and settle
+  const tBounceTotal = clamp01((scroll - FALL_END) / (BOUNCE_2_UP_END - FALL_END));
+
+  if (scroll <= BOUNCE_1_UP_END) {
+    // First bounce rising: coin tilts visibly (up to ~60°) — shows the back face
+    const t = (scroll - FALL_END) / (BOUNCE_1_UP_END - FALL_END);
+    out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
+    out.x = power3Out(t) * (Math.PI / 3);
     return;
   }
+
+  if (scroll <= BOUNCE_1_DOWN_END) {
+    // First bounce falling: coin rights itself cleanly to face-up before second contact
+    const t = (scroll - BOUNCE_1_UP_END) / (BOUNCE_1_DOWN_END - BOUNCE_1_UP_END);
+    out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
+    out.x = (1 - power3Out(t)) * (Math.PI / 3); // eases from ~60° back to 0
+    return;
+  }
+
+  if (scroll <= BOUNCE_2_UP_END) {
+    // Small second bounce: coin is face-up, tiny residual wobble
+    const t = (scroll - BOUNCE_1_DOWN_END) / (BOUNCE_2_UP_END - BOUNCE_1_DOWN_END);
+    out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
+    out.x = Math.sin(t * Math.PI) * 0.06;
+    return;
+  }
+
+  // Settle: coin eases to final rest orientation, face-up
   const tSettle = clamp01((scroll - BOUNCE_2_UP_END) / (1 - BOUNCE_2_UP_END));
   out.z = Z_AT_SETTLE + power3Out(tSettle) * (Z_SETTLE_TARGET - Z_AT_SETTLE);
   out.x = 0;

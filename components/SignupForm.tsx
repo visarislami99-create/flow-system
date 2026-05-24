@@ -45,7 +45,7 @@ export default function SignupForm({ visible, reducedMotion }: Props) {
 
   return (
     <div
-      className={`pointer-events-${visible ? "auto" : "none"} fixed inset-x-0 bottom-[18vh] z-20 flex justify-center`}
+      className={`pointer-events-${visible ? "auto" : "none"} fixed inset-x-0 bottom-[8vh] z-20 flex justify-center`}
       style={{
         opacity: visible ? 1 : 0,
         transition: reducedMotion
