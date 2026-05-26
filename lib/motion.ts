@@ -1,24 +1,31 @@
 // All scroll → motion math. Pure functions, no DOM, no state.
 // Scroll drives everything — coin position, rotation, camera, bloom.
 // Scrubbing up reverses the animation exactly.
+//
+// Behaviour (new):
+//   0 → 0.85  Coin floats at COIN_FLOAT_Y, spinning on Z only.
+//             Camera is fixed at CAM_END_POS the entire time.
+//   0.85 → 1  Landing tween (driven by Site.tsx GSAP, not raw scroll):
+//             coin drops from COIN_FLOAT_Y → 0.1, bounces, settles.
 
 import * as THREE from "three";
 
 // Coin world-space Y bounds
-export const COIN_Y_START = 60;
-export const COIN_Y_REST  = 0.1;
+export const COIN_Y_START  = 60;   // kept for reference
+export const COIN_Y_REST   = 0.1;
+export const COIN_FLOAT_Y  = 2.5;  // height coin hovers at during scroll phase
 
-// Camera positions
-export const CAM_START_POS  = new THREE.Vector3(0, 55, 8);
-export const CAM_START_LOOK = new THREE.Vector3(0, 60, 0);
+// Camera positions — single fixed position used throughout
+export const CAM_START_POS  = new THREE.Vector3(0, 4, 3); // same as end
+export const CAM_START_LOOK = new THREE.Vector3(0, 0.2, 0);
 export const CAM_END_POS    = new THREE.Vector3(0, 4, 3);
 export const CAM_END_LOOK   = new THREE.Vector3(0, 0.2, 0);
 
-// Scroll milestones
-const FALL_END         = 0.85;
-const BOUNCE_1_UP_END  = 0.92;
+// Scroll milestones (landing phase: 0.85 → 1.0)
+export const FALL_END          = 0.85;
+const BOUNCE_1_UP_END   = 0.92;
 const BOUNCE_1_DOWN_END = 0.95;
-const BOUNCE_2_UP_END  = 0.97;
+const BOUNCE_2_UP_END   = 0.97;
 
 const TWO_PI = Math.PI * 2;
 
@@ -28,14 +35,16 @@ const power3Out = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01   = (v: number) => Math.min(1, Math.max(0, v));
 
 // --- Coin Y position ---
+// 0 → 0.85 : coin locked at COIN_FLOAT_Y
+// 0.85 → 1  : drop → bounce → settle (driven by landing tween)
 export function coinY(scroll: number): number {
-  if (scroll <= FALL_END) {
-    const t = clamp01(scroll / FALL_END);
-    return 60 - power2In(t) * 59; // 60 → 1, accelerating
+  if (scroll < FALL_END) {
+    return COIN_FLOAT_Y;
   }
+  // Drop: COIN_FLOAT_Y → COIN_Y_REST with power2In acceleration
   if (scroll <= 0.88) {
     const t = (scroll - FALL_END) / (0.88 - FALL_END);
-    return 1 - t * (1 - COIN_Y_REST); // 1 → REST
+    return COIN_FLOAT_Y - power2In(t) * (COIN_FLOAT_Y - COIN_Y_REST);
   }
   if (scroll <= BOUNCE_1_UP_END) {
     const t = (scroll - 0.88) / (BOUNCE_1_UP_END - 0.88);
@@ -70,31 +79,14 @@ export function bloomStrength(scroll: number): number {
 }
 
 // --- Camera state ---
+// Fixed at CAM_END_POS throughout — no tracking movement.
 export interface CameraState {
   pos: THREE.Vector3;
   look: THREE.Vector3;
 }
 
-const TRACK_END = 0.7;
-const tmpTrackPos  = new THREE.Vector3();
-const tmpTrackLook = new THREE.Vector3();
-
-export function cameraState(scroll: number, out: CameraState): void {
-  const cy = coinY(scroll);
-  if (scroll < TRACK_END) {
-    out.pos.set(0, cy - 5, 8);
-    out.look.set(0, cy + 0.5, 0);
-    return;
-  }
-  if (scroll < FALL_END) {
-    const t     = (scroll - TRACK_END) / (FALL_END - TRACK_END);
-    const eased = power3Out(t);
-    tmpTrackPos.set(0, cy - 5, 8);
-    tmpTrackLook.set(0, cy + 0.5, 0);
-    out.pos.lerpVectors(tmpTrackPos, CAM_END_POS, eased);
-    out.look.lerpVectors(tmpTrackLook, CAM_END_LOOK, eased);
-    return;
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function cameraState(_scroll: number, out: CameraState): void {
   out.pos.copy(CAM_END_POS);
   out.look.copy(CAM_END_LOOK);
 }
@@ -121,11 +113,11 @@ const Z_AT_SETTLE    = Z_AT_LANDING + Z_BOUNCE_RANGE;
 const Z_SETTLE_TARGET = 12 * Math.PI;
 
 export function coinRotation(scroll: number, out: CoinRotation): void {
-  if (scroll <= FALL_END) {
+  if (scroll < FALL_END) {
+    // Coin floats — spin Z only, no X flip (stays face-up the whole time)
     const tFall = clamp01(scroll / FALL_END);
     out.z = power2In(tFall) * Z_AT_LANDING;
-    // 2 full forward flips (4π) at constant rate → lands face-up (4π mod 2π = 0)
-    out.x = tFall * 4 * Math.PI;
+    out.x = 0;
     return;
   }
 
