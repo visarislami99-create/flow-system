@@ -39,6 +39,7 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
 
   const smoothedY = useRef(COIN_FLOAT_Y);
 
+
   // One-time projection matrix setup.
   useEffect(() => {
     (camera as THREE.PerspectiveCamera).fov  = 35;
@@ -75,9 +76,9 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
       coinRef.current.rotation.z = scratchRot.z;
     }
 
-    // Camera — fixed level shot. Set directly every frame (no lerp drift).
-    camera.position.set(0, COIN_FLOAT_Y, 5);
-    camera.lookAt(0, COIN_FLOAT_Y, 0);
+    // Camera — slight downward angle so coin face is visible.
+    camera.position.set(0, 2.2, 4.5);
+    camera.lookAt(0, 0.7, 0);
   });
 
   const floorTexture = useMemo(() => {
@@ -104,7 +105,7 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
       <hemisphereLight color={"#FFFFFF"} groundColor={"#F5F3EE"} intensity={0.5} />
 
       {/* Floor */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, -0.05, 0]} receiveShadow={false}>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.43, 0]} receiveShadow={false}>
         <circleGeometry args={[20, 64]} />
         <meshBasicMaterial map={floorTexture} toneMapped={false} />
       </mesh>
@@ -163,7 +164,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         toneMappingExposure: 1.1,
         alpha: false,
       }}
-      camera={{ position: [0, COIN_FLOAT_Y, 5], fov: 35, near: 0.1, far: 200 }}
+      camera={{ position: [0, 2.2, 4.5], fov: 35, near: 0.1, far: 200 }}
       style={{
         position: "fixed",
         inset: 0,

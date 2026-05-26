@@ -94,10 +94,11 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     });
   }, [scene, material]);
 
-  // Engrave depth: 70% of half-thickness so text visibly recesses into the face.
-  const engraveDepth = Math.max(0.008, faceHalf * 0.7);
-  // Text front face sits flush with the coin surface.
-  const offset = faceHalf - engraveDepth + 0.001;
+  // Text protrudes slightly above coin surface — avoids z-fighting entirely.
+  // engraveDepth controls how thick the raised lettering is.
+  const engraveDepth = Math.max(0.006, faceHalf * 0.5);
+  // offset = surface of coin + tiny gap so text sits on top, not inside.
+  const offset = faceHalf + 0.004;
 
   // Per-axis text position + rotation.
   //
