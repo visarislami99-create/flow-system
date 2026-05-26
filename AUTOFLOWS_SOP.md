@@ -216,7 +216,7 @@ Common objections and how to handle them:
 > "Discovery and build takes two to four weeks. Deployment and training takes another one to two weeks. You are running within six weeks."
 
 *"What does it cost?"*
-> "The build and deployment is a fixed project fee. Depending on company size and the number of roles in scope, that runs between three and eight thousand dollars. There is an optional monthly retainer for ongoing optimization and new department rollouts."
+> "It is structured in three phases. The audit is $5,000 — two weeks, we go deep into how your company works. The build is $25,000 — six weeks, we build and deploy the system across every applicable role and run your team through training. Ongoing support is $5,000 a month — that includes a monthly review, optimizations pushed to every employee, and direct access to me on Slack or Teams."
 
 *"I need to loop in someone else."*
 > "Of course. Who else needs to be part of this conversation? I am happy to do this same walkthrough with them or put together a document they can review."
@@ -241,65 +241,40 @@ Listen to the answer. That tells you exactly what the real objection is.
 
 ## STAGE 7: POST-SALE ONBOARDING PROCESS
 
-### Phase 1 — Discovery and Context Build (2 to 4 weeks)
+### Phase 1 — Audit ($5,000 fixed, 2 weeks)
 
-This is where Visar does the strategic consulting work. The output is the master business context file.
+This is the strategic consulting and information-gathering phase.
 
-**Week 1: Business audit**
-- Interview the CEO or founder: company structure, strategic goals, what they want the business to look like in 12 months
-- Interview each department head: what does their team do, what is the daily workflow, where is the friction, what tools do they use
-- Document every computer-based role in the business and its core tasks
+**What Visar does:**
+- Goes back and forth with the client over 2 weeks via calls and async
+- Obtains company-wide SOPs for every department
+- Collects job scopes for every role from C-level to any computer-based role
+- Pulls relevant documentation from their company database where applicable
+- Identifies every manual, repeatable workflow that is a candidate for automation
+- Output: a complete operational picture of the business, ready for the build
 
-**Week 2 to 3: Context file build**
-- Write the master business context file. This is the document that tells the AI system how the entire business runs.
-- It contains: company overview, department structure, role descriptions, workflow maps, tools used, communication standards, compliance requirements, and how decisions get made
-- This file is installed into every employee's Claude setup as the foundation
+### Phase 2 — Build ($25,000 fixed, 6 weeks)
 
-**Week 4: Review and sign-off**
-- Present the context file to the CEO and department heads
-- Make adjustments based on their feedback
-- Final sign-off before deployment
+This is where the AutoFlows system is built and deployed.
 
-### Phase 2 — Deployment (1 to 2 weeks)
+**What Visar builds:**
+- A shareable Claude Dispatch file that every employee installs into their Claude
+- The file runs a rigorous intake interview per employee: it determines their role, their day-to-day tasks, and exactly how their work can be automated
+- The system is company-wide — every applicable role gets a configured AI layer
 
-- Install the context file across the business
-- Run the employee interview wizard with each team member or department in sequence
-- The wizard interviews each employee, learns their specific role, tasks, and working style, and configures their personal AI setup
-- Configure parallel dispatch agents for each role's core task types
-- Test with one employee per department before full rollout
+**Training:**
+- Visar runs one or multiple training sessions with the full team or segmented teams
+- Sessions teach employees how to install the system, run the intake interview, and command their AI agents daily
+- Managers are trained on how to oversee their team's AI layer
 
-**What Visar does manually here:**
-- Oversee the wizard installation for each department
-- Troubleshoot any configuration issues
-- Make real-time adjustments to the context file based on what the wizard surfaces
+**Client pays Anthropic directly** for Claude subscriptions. AutoFlows charges for the build only.
 
-### Phase 3 — Training (1 to 2 weeks)
+### Phase 3 — Retainer ($5,000/month, ongoing)
 
-- Run training sessions per department (not company-wide — department-by-department is more effective)
-- Teach employees how to command the AI, how to review outputs, how to approve and use the completed work
-- Train managers on how to monitor their team's AI usage
-- Leave each department with a one-page reference guide specific to their role
-
-**What Visar does manually here:**
-- Run the training sessions live (video call or in-person for large clients)
-- Answer edge case questions
-- Collect feedback and make context file adjustments
-
-### Phase 4 — Go-Live and First 30 Days
-
-- Team is live on the system
-- Visar monitors usage in week one and checks in daily with department heads
-- Weekly check-in call with the CEO or COO for the first month
-- Fix any issues that arise in real usage immediately
-
-### Phase 5 — Retainer (Ongoing, Optional)
-
-Monthly retainer covers:
-- Ongoing optimization of the context file as the business evolves
-- New department or role onboarding as the company grows or hires
-- Monthly performance review with the CEO or COO
-- Prompt updates when AI capabilities improve
-- Priority support for any system issues
+- Visar is available on the client's Slack or Teams for questions and bug reports
+- Monthly review session: performance audit, identify gaps, optimize the file
+- Optimizations are released as a version update pushed to all employees — one change, everyone benefits
+- Every client on retainer receives the same improvement rollout
 
 ---
 
@@ -322,9 +297,11 @@ Monthly retainer covers:
 ## KEY NUMBERS TO KNOW
 
 - Average sales cycle (cold to close): 2 to 6 weeks
-- Discovery and build: $3,000 to $8,000 (fixed)
-- Monthly retainer: $500 to $1,500
-- Time to full deployment: 5 to 8 weeks from signed agreement
+- Audit: $5,000 fixed
+- Build: $25,000 fixed
+- Retainer: $5,000/month
+- Full year one value per client: $90,000 ($5K + $25K + $5K x 12)
+- Time to full deployment: 8 weeks from signed agreement (2 audit + 6 build)
 - Target pipeline: 3 to 5 active conversations at all times to hit 1 close per month
 
 ---

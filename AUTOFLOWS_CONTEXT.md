@@ -31,12 +31,36 @@ Employees get parallel AI chats running simultaneously — one per task they hav
 - Clients pay Anthropic directly for Claude subscriptions
 - Visar charges for the build, deployment, and optional monthly retainer
 
-## Pricing (working model)
-- Discovery + Context Build: $3,000 – $8,000 (one-time)
-- Monthly Retainer: $500 – $1,500/month (optional)
+## Pricing (confirmed)
+
+### Phase 1 — Audit: $5,000 (fixed, one-time)
+Duration: 2 weeks.
+Deliverable: Full operational picture of the company.
+- Obtain company-wide SOPs
+- Collect job scopes for all roles from C-level to every computer-based role
+- Extract relevant information from company databases where applicable
+- Back-and-forth sessions with client to fill gaps and clarify workflows
+
+### Phase 2 — Build: $25,000 (fixed, one-time)
+Duration: 6 weeks.
+Deliverable: A shareable file (the AutoFlows system file) deployed company-wide.
+- Build a shareable Claude Dispatch file every employee can install
+- File runs a rigorous intake interview: determines the employee's role, day-to-day work, and automation opportunities
+- Visar holds training sessions (full team or segmented by department) to install the system and teach each team how to use it
+- Client pays Anthropic directly for Claude subscriptions — AutoFlows charges for the build only
+
+### Phase 3 — Retainer: $5,000/month (ongoing)
+Deliverable: Ongoing support, optimization, and rollout of improvements.
+- Visar is available on the client's Slack or Teams for questions and bug reports
+- Monthly review session to audit performance and optimize the file
+- Optimizations are packaged as version updates shared with all employees
+- Every client on retainer gets the same optimization push — one update, everyone benefits
+
+### Total Engagement Value (if all three phases)
+$5,000 + $25,000 + ($5,000 x 12) = $90,000 in year one per client.
 
 ## Target Market
-- Mid-market businesses: 100 – 1,000 employees
+- Mid-market businesses: 100 – 500 employees
 - Any industry where work is computer-based and browser-based
 - Decision maker: CEO or founder (org-wide system = C-suite decision)
 - Secondary buyer: COO, Head of Operations

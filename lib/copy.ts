@@ -1,19 +1,19 @@
 // Centralised copy strings.
 
-export const HERO = `Your team, finally focused.`;
+export const HERO = `Your whole company. Automated.`;
 
-export const SECTION_2 = `Right now your best people spend most of their day on manual, repetitive work. That is not what you hired them for.`;
+export const SECTION_2 = `40% of what your best people do today is pattern work. Same tasks, same triggers, same output — every single day. Across every role. You hired for judgment. You're paying for execution.`;
 
-export const SECTION_3 = `AutoFlows builds an AI operating system across your entire business. From C-suite to every computer-based role.`;
+export const SECTION_3 = `AutoFlows audits your entire operation — every process, every role, every workflow. Then builds a single system that deploys across your whole company automatically. Fully live in 8 weeks.`;
 
-export const SECTION_4 = `Every employee gets an AI that knows their role, their tools, and how your business runs. They stop doing the work. They start commanding it.`;
+export const SECTION_4 = `Every employee installs one file. It interviews them, learns their role, and configures their AI system automatically. Not a generic tool — a system built around how your company actually works.`;
 
-export const SECTION_5 = `We build it, deploy it, and train your whole team to use it. One system. Every role. Every department.`;
+export const SECTION_5 = `We map your operation, build the deployment system, train your team, and stay on retainer to keep it sharp. Every optimisation rolls out company-wide in a single update.`;
 
-export const SECTION_6 = `If your business runs on computers, this changes everything.`;
+export const SECTION_6 = `If your team works on computers, there is no reason to wait.`;
 
 export const FORM = {
   placeholder: `Your work email.`,
   success: `Thanks. We'll be in touch within 24 hours.`,
-  note: `Replies within 24 hours. From a human.`,
+  note: `20-minute discovery call. No pitch. Just a look at what we'd build for your company.`,
 };
