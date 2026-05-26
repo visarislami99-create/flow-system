@@ -18,12 +18,13 @@ export const COIN_Y_REST   = 0.1;
 // the full bounce arc without clipping.
 export const COIN_FLOAT_Y  = 1.0;
 
-// Camera — fixed throughout (no tracking)
-// Look-at Y == COIN_FLOAT_Y  →  floating coin is always at exact screen centre
-export const CAM_START_POS  = new THREE.Vector3(0, 3.5, 5);
-export const CAM_START_LOOK = new THREE.Vector3(0, 1.0,  0);
-export const CAM_END_POS    = new THREE.Vector3(0, 3.5, 5);
-export const CAM_END_LOOK   = new THREE.Vector3(0, 1.0,  0);
+// Camera — fixed, level shot throughout (no tracking, no tilt).
+// Camera Y == Look-at Y == COIN_FLOAT_Y  →  coin always projects to exact
+// screen centre, perfectly aligned with the side copy cards (top: 50%).
+export const CAM_START_POS  = new THREE.Vector3(0, COIN_FLOAT_Y, 5);
+export const CAM_START_LOOK = new THREE.Vector3(0, COIN_FLOAT_Y, 0);
+export const CAM_END_POS    = new THREE.Vector3(0, COIN_FLOAT_Y, 5);
+export const CAM_END_LOOK   = new THREE.Vector3(0, COIN_FLOAT_Y, 0);
 
 // Scroll milestones (landing phase: 0.85 → 1.0)
 export const FALL_END          = 0.85;
