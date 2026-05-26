@@ -119,13 +119,16 @@ const Z_SETTLE_TARGET = 12 * Math.PI;
 
 export function coinRotation(scroll: number, out: CoinRotation): void {
   if (scroll < FALL_END) {
-    // Float phase: Z spin accelerates + X flips show faces + Y wobble for variety.
-    // X = 4π → exactly 2 full flips → coin lands face-up (4π mod 2π = 0).
-    // Y uses odd multiple of π so it also returns to 0 at tFall = 1.
+    // Float phase:
+    //   Z — 6 spins, power2In acceleration (same as before)
+    //   X — bounded ±36° oscillation (7 half-cycles → 0 at tFall=1, never goes edge-on)
+    //   Y — gentle ±22° wobble for variety (11 half-cycles → 0 at tFall=1)
+    // Both X and Y return to 0 at tFall=1 (odd multiplier × π) so the
+    // coin enters the landing phase face-up with no discontinuity.
     const tFall = clamp01(scroll / FALL_END);
     out.z = power2In(tFall) * Z_AT_LANDING;
-    out.x = tFall * 4 * Math.PI;
-    out.y = Math.sin(tFall * 9 * Math.PI) * 0.22; // 9 half-cycles → y=0 at landing
+    out.x = Math.sin(tFall * 7 * Math.PI) * (Math.PI / 5);  // ±36°
+    out.y = Math.sin(tFall * 11 * Math.PI) * (Math.PI / 8); // ±22.5°
     return;
   }
 
