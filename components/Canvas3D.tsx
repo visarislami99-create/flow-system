@@ -164,11 +164,6 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         alpha: false,
       }}
       camera={{ position: [0, COIN_FLOAT_Y, 5], fov: 35, near: 0.1, far: 200 }}
-      onCreated={({ camera }) => {
-        // R3F default lookAt is (0,0,0) which tilts the camera down.
-        // Override immediately so frame-0 is already correct.
-        camera.lookAt(CAM_END_LOOK.x, CAM_END_LOOK.y, CAM_END_LOOK.z);
-      }}
       style={{
         position: "fixed",
         inset: 0,
