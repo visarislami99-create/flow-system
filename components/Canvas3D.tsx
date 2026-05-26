@@ -13,6 +13,7 @@ import {
   coinRotation,
   bloomStrength,
   COIN_FLOAT_Y,
+  COIN_Y_REST,
   type CameraState,
   type CoinRotation,
 } from "@/lib/motion";
@@ -64,7 +65,7 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
     // Position — exponential smoothing so fast scroll doesn't teleport the coin.
     const targetY = coinY(progress);
     if (reducedMotion) {
-      smoothedY.current = progress < 0.33 ? 40 : progress < 0.66 ? 20 : 0;
+      smoothedY.current = progress < 0.85 ? COIN_FLOAT_Y : COIN_Y_REST;
     } else {
       const alpha = 1 - Math.exp(-dt / 0.05);
       smoothedY.current += (targetY - smoothedY.current) * alpha;
@@ -176,7 +177,7 @@ export default function Canvas3D({ progressRef, reducedMotion }: Props) {
         toneMappingExposure: 1.1,
         alpha: false,
       }}
-      camera={{ position: [0, 4, 3], fov: 35, near: 0.1, far: 200 }}
+      camera={{ position: [0, 3.5, 5], fov: 35, near: 0.1, far: 200 }}
       style={{
         position: "fixed",
         inset: 0,

@@ -13,13 +13,17 @@ import * as THREE from "three";
 // Coin world-space Y bounds
 export const COIN_Y_START  = 60;   // kept for reference
 export const COIN_Y_REST   = 0.1;
-export const COIN_FLOAT_Y  = 2.5;  // height coin hovers at during scroll phase
+// COIN_FLOAT_Y must equal CAM_END_LOOK.y so the coin projects to screen-center
+// while hovering. Camera is further back (Z=5) for field-of-view that covers
+// the full bounce arc without clipping.
+export const COIN_FLOAT_Y  = 1.0;
 
-// Camera positions — single fixed position used throughout
-export const CAM_START_POS  = new THREE.Vector3(0, 4, 3); // same as end
-export const CAM_START_LOOK = new THREE.Vector3(0, 0.2, 0);
-export const CAM_END_POS    = new THREE.Vector3(0, 4, 3);
-export const CAM_END_LOOK   = new THREE.Vector3(0, 0.2, 0);
+// Camera — fixed throughout (no tracking)
+// Look-at Y == COIN_FLOAT_Y  →  floating coin is always at exact screen centre
+export const CAM_START_POS  = new THREE.Vector3(0, 3.5, 5);
+export const CAM_START_LOOK = new THREE.Vector3(0, 1.0,  0);
+export const CAM_END_POS    = new THREE.Vector3(0, 3.5, 5);
+export const CAM_END_LOOK   = new THREE.Vector3(0, 1.0,  0);
 
 // Scroll milestones (landing phase: 0.85 → 1.0)
 export const FALL_END          = 0.85;
@@ -48,15 +52,15 @@ export function coinY(scroll: number): number {
   }
   if (scroll <= BOUNCE_1_UP_END) {
     const t = (scroll - 0.88) / (BOUNCE_1_UP_END - 0.88);
-    return COIN_Y_REST + power3Out(t) * 2.5; // first bounce up
+    return COIN_Y_REST + power3Out(t) * 1.5; // first bounce up  (peaks at Y=1.6, above float)
   }
   if (scroll <= BOUNCE_1_DOWN_END) {
     const t = (scroll - BOUNCE_1_UP_END) / (BOUNCE_1_DOWN_END - BOUNCE_1_UP_END);
-    return COIN_Y_REST + 2.5 - power2In(t) * 2.5; // bounce down
+    return COIN_Y_REST + 1.5 - power2In(t) * 1.5; // bounce down
   }
   if (scroll <= BOUNCE_2_UP_END) {
     const t = (scroll - BOUNCE_1_DOWN_END) / (BOUNCE_2_UP_END - BOUNCE_1_DOWN_END);
-    return COIN_Y_REST + Math.sin(t * Math.PI) * 0.6; // small second bounce
+    return COIN_Y_REST + Math.sin(t * Math.PI) * 0.4; // small second bounce
   }
   return COIN_Y_REST;
 }
