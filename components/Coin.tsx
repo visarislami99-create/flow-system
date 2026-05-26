@@ -18,9 +18,9 @@ interface Props {
 }
 
 const ENGRAVE_MAT_PROPS = {
-  color: "#4A2E08",
-  metalness: 0.3,
-  roughness: 0.9,
+  color: "#000000",   // pure black for maximum contrast against gold
+  metalness: 0.0,
+  roughness: 1.0,    // fully matte so no reflection competes with the text
 };
 
 type FaceAxis = "x" | "y" | "z";
@@ -30,13 +30,12 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
 
   const material = useMemo(() => {
     const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#D4B57E"),
-      metalness: 0.7,
-      roughness: 0.28,
-      emissive: new THREE.Color("#8A6E3E"),
-      emissiveIntensity: 0.22,
+      color: new THREE.Color("#C9A55A"),
+      metalness: 0.55,
+      roughness: 0.38,
+      // No emissive — it was washing out the engraved text
     });
-    mat.envMapIntensity = 0.6;
+    mat.envMapIntensity = 0.35; // reduce reflection so engraving stays readable
     return mat;
   }, []);
 
@@ -95,8 +94,8 @@ const Coin = forwardRef<THREE.Group, Props>(function Coin({ visible }, ref) {
     });
   }, [scene, material]);
 
-  // Engrave depth: 40% of half-thickness, minimum 4 mm equivalent.
-  const engraveDepth = Math.max(0.004, faceHalf * 0.4);
+  // Engrave depth: 70% of half-thickness so text visibly recesses into the face.
+  const engraveDepth = Math.max(0.008, faceHalf * 0.7);
   // Text front face sits flush with the coin surface.
   const offset = faceHalf - engraveDepth + 0.001;
 

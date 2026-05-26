@@ -99,22 +99,17 @@ export default function Copy({ progress, reducedMotion }: Props) {
         <p className="text-body text-ink">{SECTION_5}</p>
       </Card>
 
-      {/* SECTION 6 — center */}
+      {/* SECTION 6 — below coin, no background box */}
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        style={cardStyle(s6.reveal, s6.out, reducedMotion)}
+        className="absolute left-1/2 -translate-x-1/2"
+        style={{ bottom: "18vh", ...cardStyle(s6.reveal, s6.out, reducedMotion) }}
       >
-        <div style={{
-          background: "rgba(255,255,255,0.95)",
-          border: "1px solid rgba(10,10,10,0.07)",
-          padding: "20px 28px",
-          maxWidth: "340px",
-          textAlign: "center",
-        }}>
-          <p className="font-serif text-ink" style={{ fontSize: "clamp(1.1rem, 2.2vw, 1.5rem)" }}>
-            {SECTION_6}
-          </p>
-        </div>
+        <p
+          className="font-serif text-ink text-center"
+          style={{ fontSize: "clamp(1.1rem, 2.2vw, 1.5rem)", maxWidth: "380px" }}
+        >
+          {SECTION_6}
+        </p>
       </div>
 
     </div>

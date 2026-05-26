@@ -110,7 +110,7 @@ export function cameraState(_scroll: number, out: CameraState): void {
 // Settle (0.97 → 1.0):
 //   Both ease to rest orientation
 
-export interface CoinRotation { x: number; z: number; }
+export interface CoinRotation { x: number; y: number; z: number; }
 
 const Z_AT_LANDING   = 6 * TWO_PI;
 const Z_BOUNCE_RANGE = Math.PI * 0.3;
@@ -119,10 +119,13 @@ const Z_SETTLE_TARGET = 12 * Math.PI;
 
 export function coinRotation(scroll: number, out: CoinRotation): void {
   if (scroll < FALL_END) {
-    // Coin floats — spin Z only, no X flip (stays face-up the whole time)
+    // Float phase: Z spin accelerates + X flips show faces + Y wobble for variety.
+    // X = 4π → exactly 2 full flips → coin lands face-up (4π mod 2π = 0).
+    // Y uses odd multiple of π so it also returns to 0 at tFall = 1.
     const tFall = clamp01(scroll / FALL_END);
     out.z = power2In(tFall) * Z_AT_LANDING;
-    out.x = 0;
+    out.x = tFall * 4 * Math.PI;
+    out.y = Math.sin(tFall * 9 * Math.PI) * 0.22; // 9 half-cycles → y=0 at landing
     return;
   }
 
@@ -130,31 +133,32 @@ export function coinRotation(scroll: number, out: CoinRotation): void {
   const tBounceTotal = clamp01((scroll - FALL_END) / (BOUNCE_2_UP_END - FALL_END));
 
   if (scroll <= BOUNCE_1_UP_END) {
-    // First bounce rising: coin tilts visibly (up to ~60°) — shows the back face
     const t = (scroll - FALL_END) / (BOUNCE_1_UP_END - FALL_END);
     out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
     out.x = power3Out(t) * (Math.PI / 3);
+    out.y = 0;
     return;
   }
 
   if (scroll <= BOUNCE_1_DOWN_END) {
-    // First bounce falling: coin rights itself cleanly to face-up before second contact
     const t = (scroll - BOUNCE_1_UP_END) / (BOUNCE_1_DOWN_END - BOUNCE_1_UP_END);
     out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
-    out.x = (1 - power3Out(t)) * (Math.PI / 3); // eases from ~60° back to 0
+    out.x = (1 - power3Out(t)) * (Math.PI / 3);
+    out.y = 0;
     return;
   }
 
   if (scroll <= BOUNCE_2_UP_END) {
-    // Small second bounce: coin is face-up, tiny residual wobble
     const t = (scroll - BOUNCE_1_DOWN_END) / (BOUNCE_2_UP_END - BOUNCE_1_DOWN_END);
     out.z = Z_AT_LANDING + tBounceTotal * Z_BOUNCE_RANGE;
     out.x = Math.sin(t * Math.PI) * 0.06;
+    out.y = 0;
     return;
   }
 
-  // Settle: coin eases to final rest orientation, face-up
+  // Settle: eases to final rest orientation, face-up
   const tSettle = clamp01((scroll - BOUNCE_2_UP_END) / (1 - BOUNCE_2_UP_END));
   out.z = Z_AT_SETTLE + power3Out(tSettle) * (Z_SETTLE_TARGET - Z_AT_SETTLE);
   out.x = 0;
+  out.y = 0;
 }

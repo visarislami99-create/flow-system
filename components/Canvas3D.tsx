@@ -8,15 +8,11 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import Coin from "./Coin";
 import {
-  cameraState,
   coinY,
   coinRotation,
   bloomStrength,
   COIN_FLOAT_Y,
   COIN_Y_REST,
-  CAM_END_POS,
-  CAM_END_LOOK,
-  type CameraState,
   type CoinRotation,
 } from "@/lib/motion";
 
@@ -25,9 +21,8 @@ interface Props {
   reducedMotion: boolean;
 }
 
-// Reusable scratch objects — avoids per-frame allocations.
-const scratchCam: CameraState  = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
-const scratchRot: CoinRotation = { x: 0, z: 0 };
+// Reusable scratch object — avoids per-frame allocation.
+const scratchRot: CoinRotation = { x: 0, y: 0, z: 0 };
 
 function SceneContents({ progressRef, reducedMotion }: Props) {
   const coinRef = useRef<THREE.Group>(null);
@@ -42,18 +37,10 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
     return () => { envMap.dispose(); pmrem.dispose(); };
   }, [gl, scene]);
 
-  const smoothedY       = useRef(COIN_FLOAT_Y);
-  // Seed at the target so frame-0 has no drift before the useEffect fires.
-  const smoothedCamPos  = useRef(CAM_END_POS.clone());
-  const smoothedCamLook = useRef(CAM_END_LOOK.clone());
+  const smoothedY = useRef(COIN_FLOAT_Y);
 
-  // Seed camera at scroll=0 so the first frame has no jump.
+  // One-time projection matrix setup.
   useEffect(() => {
-    cameraState(0, scratchCam);
-    smoothedCamPos.current.copy(scratchCam.pos);
-    smoothedCamLook.current.copy(scratchCam.look);
-    camera.position.copy(scratchCam.pos);
-    camera.lookAt(scratchCam.look);
     (camera as THREE.PerspectiveCamera).fov  = 35;
     (camera as THREE.PerspectiveCamera).near = 0.1;
     (camera as THREE.PerspectiveCamera).far  = 200;
@@ -79,22 +66,18 @@ function SceneContents({ progressRef, reducedMotion }: Props) {
     // Rotation — pure function of scroll, fully reversible.
     if (reducedMotion) {
       coinRef.current.rotation.x = 0;
+      coinRef.current.rotation.y = 0;
       coinRef.current.rotation.z = 0;
     } else {
       coinRotation(progress, scratchRot);
       coinRef.current.rotation.x = scratchRot.x;
+      coinRef.current.rotation.y = scratchRot.y;
       coinRef.current.rotation.z = scratchRot.z;
     }
 
-    // Camera dolly — tracks coin during fall, locks at landing.
-    if (!reducedMotion) {
-      cameraState(progress, scratchCam);
-      const camAlpha = 1 - Math.exp(-dt / 0.25);
-      smoothedCamPos.current.lerp(scratchCam.pos, camAlpha);
-      smoothedCamLook.current.lerp(scratchCam.look, camAlpha);
-      camera.position.copy(smoothedCamPos.current);
-      camera.lookAt(smoothedCamLook.current);
-    }
+    // Camera — fixed level shot. Set directly every frame (no lerp drift).
+    camera.position.set(0, COIN_FLOAT_Y, 5);
+    camera.lookAt(0, COIN_FLOAT_Y, 0);
   });
 
   const floorTexture = useMemo(() => {
